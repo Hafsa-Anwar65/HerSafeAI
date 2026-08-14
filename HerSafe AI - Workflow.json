@@ -1,0 +1,325 @@
+{
+  "name": "HerSafe AI - Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi, I'm HerSafe AI 💜\nI'm here to help you talk through what happened, understand your options, and figure out next steps — at your own pace. Nothing you share here is judged or shared without your say-so.\n\nWhat would you like to talk about?",
+        "options": {
+          "subtitle": "A supportive space to talk",
+          "title": "HerSafe AI"
+        }
+      },
+      "id": "e4d7c758-5a11-4abb-85d6-106962ce8771",
+      "name": "01 Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        480
+      ],
+      "webhookId": "hersafe-ai-chat-trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "user_message",
+              "type": "string",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "id": "2",
+              "name": "session_id",
+              "type": "string",
+              "value": "={{ $json.sessionId }}"
+            },
+            {
+              "id": "c4ba6a62-6e85-43f2-a89c-1af2a1fb6250",
+              "name": "wants_report",
+              "value": "={{\n  /^(generate|create|make|show|give|export|download)\\b.*\\b(my\\s+)?(incident\\s+)?report\\b/i.test($json.chatInput || \"\")\n}}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8b7dfea5-3784-4a12-b731-f5e871c4a5e8",
+      "name": "02 Normalize Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}\nReport requested: {{ $json.wants_report }}",
+        "options": {
+          "systemMessage": "You are HerSafe AI, a supportive assistant that helps people talk through experiences of harassment and figure out possible next steps. You are not a lawyer, not law enforcement, and not a crisis service.\n\nHow you behave:\n- Be warm, empathetic, and non-judgmental. Never imply the situation is the user's fault.\n- Let the user describe what happened in their own words. Don't force a rigid form.\n- Ask at most ONE or TWO relevant follow-up questions per message. Never interrogate.\n- Only ask questions that help you understand the situation (what happened, roughly when, whether it's ongoing, whether they feel unsafe right now, what kind of support they're looking for).\n- Never ask for full name, ID numbers, home address, phone number, passwords, or exact location. If the user offers this info anyway, don't dwell on it or request more.\n- The user can skip any question — respect that immediately without pushing.\n- Never state a legal classification (\"this is legally...\"). You can say things like \"this may fall under...\" if relevant.\n- Never claim you have contacted, will contact, or can contact police, NGOs, HR, a university, or emergency services. You cannot take real-world action.\n- If the user indicates they are in immediate danger, drop any information-gathering. Calmly acknowledge it, gently encourage moving somewhere safer if possible, and encourage contacting a trusted person or local emergency services themselves. Keep it brief — do not continue asking detailed questions in that moment.\n- Keep responses short and easy to read. No long paragraphs, no clinical tone.\n- Do not diagnose, moralize, or offer legal conclusions.\n\nRight now, your only job is to have a natural, supportive conversation and understand what the user is going through. You are not yet generating any reports or classifications.\n\nIMPORTANT REPORT RULE:\n\nDO NOT generate, display, summarize, or include an incident report unless the user's CURRENT message explicitly requests a report.\n\nExamples of explicit report requests include:\n\n- \"generate a report\"\n- \"create my report\"\n- \"make an incident report\"\n- \"give me the report\"\n- \"show me my report\"\n- \"export my report\"\n- \"download my report\"\n- \"create a summary\"\n- \"give me a summary\"\n\nIf the user has NOT explicitly requested a report:\n\n- Respond normally as a supportive conversational assistant.\n- Ask appropriate follow-up questions.\n- Continue collecting missing information.\n- Do NOT output \"HerSafe AI Incident Report\".\n- Do NOT output report fields.\n- Do NOT include report_text.\n- Do NOT create a report just because enough information has been collected.\n\nOnly generate the report when the CURRENT USER MESSAGE explicitly asks for it.\n\nREPORT REQUEST STATUS:\n\nThe workflow provides a variable called `wants_report`.\n\nCurrent report request status:\n{{ $json.wants_report }}\n\nFollow this rule:\n\n- If `wants_report` is false: continue the normal supportive conversation. Do NOT generate or display an incident report.\n- If `wants_report` is true: the user has explicitly requested their incident report. Do NOT ask them to provide the information again. Do NOT ask questions about the incident. Respond briefly that the report is being prepared based on the information already shared.\n- Do NOT generate the full report yourself. A separate workflow node will create and attach the structured report."
+        }
+      },
+      "id": "848596fc-fef6-4f47-b6aa-56468671409f",
+      "name": "03 AI Response",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        240,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the structured data extraction component of HerSafe AI.\n\nYou do not talk to the user. Your only task is to extract structured information from the user's message.\n\nAnalyze the user message carefully and extract every relevant fact that is explicitly stated OR can be safely inferred from the wording.\n\nDo NOT invent facts.\nDo NOT make assumptions that are not reasonably supported by the user's words.\nDo NOT provide legal conclusions.\nDo NOT add explanations.\nReturn ONLY valid JSON.\n\nUSER MESSAGE:\n{{ $('02 Normalize Input').item.json.user_message }}\n\nReturn exactly this JSON structure:\n\n{\n  \"incident_category\": \"\",\n  \"description\": \"\",\n  \"context\": \"\",\n  \"date_time\": \"\",\n  \"ongoing\": null,\n  \"immediate_danger\": null,\n  \"relationship_to_person\": \"\",\n  \"user_support_preference\": \"\",\n  \"missing_information\": []\n}\n\nEXTRACTION RULES:\n\n1. incident_category\n\nChoose one or more categories from this exact list, separated by commas if more than one clearly applies:\n\n- Verbal harassment\n- Physical harassment\n- Sexual harassment\n- Online/cyber harassment\n- Workplace harassment\n- Educational institution harassment\n- Public-space harassment\n- Stalking\n- Threats/intimidation\n- Other\n\nExamples:\n\n\"unwanted messages\" → Online/cyber harassment\n\n\"keeps following me\" → Stalking\n\n\"someone keeps sending me inappropriate messages\" → Online/cyber harassment\n\n\"a guy in my class keeps contacting me after I told him to stop\" → Educational institution harassment, Online/cyber harassment\n\nOnly select categories clearly supported by the message.\n\n2. description\n\nWrite a concise factual summary of what happened.\n\nDo not exaggerate.\nDo not add facts.\nPreserve important details such as repeated contact, unwanted behavior, being asked to stop, or references to the user's location.\n\n3. context\n\nExtract the general environment or setting.\n\nYou MUST infer the context when the wording clearly supports it.\n\nExamples:\n\n\"a guy in one of my classes at uni\"\n→ \"University\"\n\n\"my professor\"\n→ \"University\"\n\n\"at work\"\n→ \"Workplace\"\n\n\"my manager\"\n→ \"Workplace\"\n\n\"on Instagram\"\n→ \"Online\"\n\n\"on the street\"\n→ \"Public space\"\n\nDo NOT use a specific address or building name.\n\n4. relationship_to_person\n\nExtract the general relationship between the user and the person involved.\n\nYou MUST infer the relationship when the wording clearly supports it.\n\nExamples:\n\n\"a guy in one of my classes\"\n→ \"Classmate\"\n\n\"my professor\"\n→ \"Professor\"\n\n\"my manager\"\n→ \"Manager\"\n\n\"someone from work\"\n→ \"Coworker\"\n\n\"my ex\"\n→ \"Ex-partner\"\n\n\"someone I don't know\"\n→ \"Stranger\"\n\nDo not invent a relationship if it cannot reasonably be inferred.\n\n5. date_time\n\nExtract any date, time, duration, or approximate timeframe explicitly provided.\n\nExamples:\n\n\"for about a month\"\n→ \"About one month\"\n\n\"a few days ago\"\n→ \"A few days ago\"\n\nIf no time information is provided:\n→ \"\"\n\n6. ongoing\n\nSet to true if the message clearly indicates the behavior is continuing, repeated, or still happening.\n\nExamples:\n\n\"he keeps messaging me\"\n→ true\n\n\"it is still happening\"\n→ true\n\nIf the user clearly says it has stopped:\n→ false\n\nIf there is not enough information:\n→ null\n\n7. immediate_danger\n\nOnly set this to true when the user explicitly indicates immediate/current danger.\n\nExamples:\n\n\"he is outside my room right now\"\n→ true\n\n\"I am in immediate danger\"\n→ true\n\n\"I am scared but he is not near me right now\"\n→ false\n\nIf immediate danger cannot be determined:\n→ null\n\nIMPORTANT:\nA concerning situation does NOT automatically mean immediate danger.\n\nFor example, someone mentioning that they saw the user near their hostel is concerning, but do not automatically classify it as immediate danger unless the message indicates an immediate/current threat.\n\n8. user_support_preference\n\nExtract what type of help the user says they want.\n\nExamples:\n\n\"I don't know what to do\"\n→ \"Guidance\"\n\n\"I want to report this\"\n→ \"Reporting\"\n\n\"I just want someone to talk to\"\n→ \"Emotional support\"\n\n\"I want to document this\"\n→ \"Incident documentation\"\n\nIf the user has not stated what kind of support they want:\n→ \"\"\n\n9. missing_information\n\nCreate an array containing the names of fields that are genuinely unknown.\n\nPossible field names:\n\n\"incident_category\"\n\"description\"\n\"context\"\n\"date_time\"\n\"ongoing\"\n\"immediate_danger\"\n\"relationship_to_person\"\n\"user_support_preference\"\n\nDo NOT include a field in missing_information if you successfully extracted it.\n\nFor example, if context and relationship_to_person are known but date_time and user_support_preference are unknown:\n\n\"missing_information\": [\n  \"date_time\",\n  \"user_support_preference\"\n]\n\n10. IMPORTANT NATURAL-LANGUAGE INFERENCE\n\nDo not require the user to use exact words such as \"classmate\" or \"university\".\n\nFor example, if the user says:\n\n\"I've been getting a lot of unwanted messages from a guy in one of my classes at uni.\"\n\nYou MUST extract:\n\n\"context\": \"University\"\n\nand:\n\n\"relationship_to_person\": \"Classmate\"\n\nbecause these are reasonable inferences directly supported by the user's wording.\n\nAnother example:\n\n\"My manager keeps making inappropriate comments to me at work.\"\n\nShould produce:\n\n\"context\": \"Workplace\"\n\nand:\n\n\"relationship_to_person\": \"Manager\"\n\nAnother example:\n\n\"Someone I don't know keeps following me when I leave campus.\"\n\nShould produce:\n\n\"relationship_to_person\": \"Stranger\"\n\nand:\n\n\"context\": \"University / Public space\"\n\nDo not fabricate information beyond what the wording supports.\n\nFINAL REQUIREMENT:\n\nReturn ONLY the JSON object.\n\nNo markdown.\nNo code fences.\nNo explanation.\nNo text before or after the JSON.",
+        "hasOutputParser": true
+      },
+      "id": "2f514ff3-ab3f-4f0d-981a-83f9f74b2898",
+      "name": "04 AI Understand",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        496,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.item.json.text || $input.item.json.output || $input.item.json.response || '';\nraw = raw.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n\nlet parsed = null;\nlet parseError = null;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  parseError = e.message;\n}\n\nconst fallback = {\n  incident_category: \"\",\n  description: \"\",\n  context: \"\",\n  date_time: \"\",\n  ongoing: null,\n  immediate_danger: null,\n  relationship_to_person: \"\",\n  user_support_preference: \"\",\n  missing_information: []\n};\n\nconst currentTurn = (parsed && typeof parsed === 'object') ? { ...fallback, ...parsed } : fallback;\n\nconst sessionId = $('02 Normalize Input').item.json.session_id;\n\n// Accumulate structured data across conversation turns, keyed by session\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.sessions) staticData.sessions = {};\nconst previous = staticData.sessions[sessionId] || fallback;\n\nconst isEmpty = (v) => v === null || v === undefined || v === \"\";\n\nconst merged = { ...fallback };\nfor (const key of Object.keys(fallback)) {\n  if (key === 'missing_information') {\n    merged[key] = (Array.isArray(currentTurn[key]) && currentTurn[key].length)\n      ? currentTurn[key]\n      : (previous[key] || []);\n    continue;\n  }\n  merged[key] = !isEmpty(currentTurn[key]) ? currentTurn[key] : previous[key];\n}\n\nstaticData.sessions[sessionId] = merged;\n\nreturn {\n  json: {\n    ...merged,\n    _parse_success: parsed !== null,\n    _parse_error: parseError,\n    _raw_ai_output: raw,\n    user_message: $('02 Normalize Input').item.json.user_message,\n    session_id: sessionId,\n    ai_reply: $('03 AI Response').item.json.output || $('03 AI Response').item.json.text || ''\n  }\n};"
+      },
+      "id": "b26af97f-d881-4469-b51a-76cc58ec66b3",
+      "name": "05 Parse + Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const danger = $json.immediate_danger;\nconst ongoing = $json.ongoing;\n\nlet safety_level = \"LOW/UNCLEAR CONCERN\";\n\nif (danger === true) {\n  safety_level = \"HIGH SAFETY CONCERN\";\n} else if (ongoing === true) {\n  safety_level = \"MODERATE CONCERN\";\n}\n\nreturn {\n  json: {\n    ...$json,\n    safety_level\n  }\n};"
+      },
+      "id": "228cfcd8-cdd1-4028-a524-54b21b97e615",
+      "name": "06 Safety Assessment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nlet supportCategory = \"a trusted person you feel comfortable talking to\";\nconst nextSteps = [];\n\nconst cat = (d.incident_category || \"\").toLowerCase();\n\nif (d.safety_level === \"HIGH SAFETY CONCERN\") {\n  nextSteps.push(\"If you're in immediate danger, please try to get to a safer location if you can, and reach out to a trusted person or local emergency services.\");\n}\n\nif (cat.includes(\"workplace\")) {\n  supportCategory = \"your workplace HR or safeguarding contact\";\n} else if (cat.includes(\"educational\")) {\n  supportCategory = \"your university or student support office\";\n} else if (cat.includes(\"stalking\") || cat.includes(\"threat\")) {\n  supportCategory = \"local authorities and a trusted person, given the pattern you've described\";\n} else if (cat.includes(\"sexual\")) {\n  supportCategory = \"a counselor or a women's rights organization / NGO\";\n} else if (cat.includes(\"online\") || cat.includes(\"cyber\")) {\n  supportCategory = \"the platform's reporting tools, and a trusted person or NGO focused on online safety\";\n}\n\nnextSteps.push(`Based on what you've shared, ${supportCategory} may be a good place to look into.`);\nnextSteps.push(\"You could also consider reaching out to a counselor or mental health support if this has been weighing on you.\");\nnextSteps.push(\"Note: these are general suggestions, not a guarantee of protection or an official referral. Please verify the right local service for your situation.\");\n\nreturn {\n  json: {\n    ...d,\n    support_category: supportCategory,\n    suggested_next_steps: nextSteps.join(\" \")\n  }\n};"
+      },
+      "id": "7060f302-b7a5-46d8-bfd6-1dcabec89440",
+      "name": "07 Guidance",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\n\nconst userMessage = (d.user_message || \"\").toLowerCase().trim();\n\n// Detect explicit report requests directly from the current user message\nconst wantsReport =\n  /\\b(generate|create|make|show|give|export|download)\\b.{0,40}\\b(report|summary)\\b/i.test(userMessage) ||\n  /\\b(report|summary)\\b.{0,40}\\b(generate|create|make|show|give|export|download)\\b/i.test(userMessage) ||\n  /\\bmy\\s+(incident\\s+)?report\\b/i.test(userMessage);\n\n// If this is NOT a report request, don't create report_text\nif (!wantsReport) {\n  return {\n    json: {\n      ...d,\n      report_text: \"\",\n      wants_report: false\n    }\n  };\n}\n\nconst reportText = `### HerSafe AI Incident Report *(AI-generated draft — please review before saving or sharing)*\n\n**Incident Category:** ${d.incident_category || 'Not yet determined'}\n\n**Incident Description:** ${d.description || 'Not yet provided'}\n\n**Date/Time:** ${d.date_time || 'Not yet provided'}\n\n**Context/Location:** ${d.context || 'Not yet provided'}\n\n**Ongoing:** ${\n  d.ongoing === true\n    ? 'Yes'\n    : d.ongoing === false\n      ? 'No'\n      : 'Unknown'\n}\n\n**Immediate Safety Concern:** ${\n  d.immediate_danger === true\n    ? 'Yes'\n    : d.immediate_danger === false\n      ? 'No'\n      : 'Unknown'\n} (AI-generated assessment based only on what you shared — Safety Level: ${d.safety_level || 'Unknown'})\n\n**Relationship to Person Involved:** ${d.relationship_to_person || 'Not yet provided'}\n\n**Support Requested:** ${d.user_support_preference || 'Not yet specified'}\n\n**Suggested Next Steps:** ${d.suggested_next_steps || 'To be added'}\n\n---\n\nThis is a draft report generated from your conversation. You can edit, save, or share it however feels right for you. It has not been submitted anywhere.`;\n\nreturn {\n  json: {\n    ...d,\n    wants_report: true,\n    report_text: reportText\n  }\n};"
+      },
+      "id": "b7727792-7695-41de-bf62-8c7e6089d02b",
+      "name": "08 Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\n\nlet output = d.ai_reply || \"I'm here with you — could you tell me a bit more about what happened?\";\n\n// Add safety check only when appropriate\nif (d.safety_level === \"HIGH SAFETY CONCERN\") {\n  output += \"\\n\\nI want to gently check in — if you're in danger right now, please try to get somewhere safer if you can, and reach out to a trusted person or local emergency services. I'm here to keep talking whenever you're ready.\";\n}\n\n// ONLY attach the incident report when the user explicitly requested it\nif (d.wants_report === true && d.report_text) {\n  output += \"\\n\\n\" + d.report_text;\n}\n\nreturn {\n  json: {\n    ...d,\n    output\n  }\n};"
+      },
+      "id": "ab0dac67-a64a-4b96-83f3-d0256cd15537",
+      "name": "09 Final Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 1024
+        }
+      },
+      "id": "cc6b66ca-078c-4e50-a1b6-d88428dd614f",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        176,
+        704
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "uVUIsUwcOxOokW2n",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.session_id }}",
+        "contextWindowLength": 10
+      },
+      "id": "cd26dc10-fa05-4198-8517-13ae2540b97b",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        704
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "01 Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "02 Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "02 Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "03 AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "03 AI Response": {
+      "main": [
+        [
+          {
+            "node": "04 AI Understand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "04 AI Understand": {
+      "main": [
+        [
+          {
+            "node": "05 Parse + Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "05 Parse + Validate": {
+      "main": [
+        [
+          {
+            "node": "06 Safety Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "06 Safety Assessment": {
+      "main": [
+        [
+          {
+            "node": "07 Guidance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "07 Guidance": {
+      "main": [
+        [
+          {
+            "node": "08 Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "08 Report": {
+      "main": [
+        [
+          {
+            "node": "09 Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "03 AI Response",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "04 AI Understand",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "03 AI Response",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d33a1520-5a9d-4f7b-9792-a51ce751a2d1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2ac62670471bcdeeb528cb3b53932ed0dd6bedccc4836d995a4fcb88f45cefee"
+  },
+  "nodeGroups": [],
+  "id": "gqWkWdCMafWL1agk",
+  "tags": []
+}
