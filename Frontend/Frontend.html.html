@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HerSafe AI — Safe Reporting & Support</title>
+  <meta name="description" content="HerSafe AI is a GenAI-powered harassment reporting and support-navigation assistant aligned with UN SDG 5: Gender Equality." />
+  <style>
+    :root{
+      --bg:#090714;
+      --panel:#111022;
+      --panel-2:#17152c;
+      --text:#f8f5ff;
+      --muted:#aaa5bc;
+      --pink:#e879a9;
+      --pink-2:#b85b8e;
+      --lav:#a78bfa;
+      --line:rgba(255,255,255,.09);
+      --danger:#ff7f9f;
+      --success:#75d9b1;
+      --shadow:0 24px 70px rgba(0,0,0,.38);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 12% 8%,rgba(232,121,169,.16),transparent 30%),
+        radial-gradient(circle at 88% 12%,rgba(167,139,250,.13),transparent 28%),
+        linear-gradient(180deg,#090714 0%,#0b0918 50%,#080611 100%);
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .container{width:min(1180px,92%);margin:auto}
+    nav{
+      position:sticky;top:0;z-index:20;
+      backdrop-filter:blur(18px);
+      background:rgba(9,7,20,.78);
+      border-bottom:1px solid var(--line);
+    }
+    .nav-inner{height:70px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.3px}
+    .brand-mark{
+      width:38px;height:38px;border-radius:12px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--pink),var(--lav));
+      box-shadow:0 8px 28px rgba(232,121,169,.25);
+    }
+    .brand-mark svg{width:22px}
+    .nav-links{display:flex;gap:24px;color:var(--muted);font-size:14px}
+    .nav-links a{text-decoration:none}
+    .nav-links a:hover{color:#fff}
+    .hero{padding:70px 0 48px}
+    .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid rgba(232,121,169,.28);
+      background:rgba(232,121,169,.07);
+      color:#f4b6d0;padding:8px 12px;border-radius:999px;
+      font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase
+    }
+    h1{font-size:clamp(42px,6vw,76px);line-height:.98;letter-spacing:-4px;margin:20px 0}
+    .gradient{background:linear-gradient(110deg,#fff 10%,#f0b6d1 52%,#bcaaff 95%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero p{color:var(--muted);font-size:18px;line-height:1.7;max-width:650px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+    button,.button{
+      border:0;cursor:pointer;text-decoration:none;
+      font:inherit;font-weight:750;border-radius:13px;padding:13px 18px;
+      transition:.2s transform,.2s opacity,.2s background;
+    }
+    button:hover,.button:hover{transform:translateY(-1px)}
+    .primary{color:white;background:linear-gradient(135deg,var(--pink-2),#8b5cf6);box-shadow:0 12px 32px rgba(139,92,246,.18)}
+    .secondary{color:#eee;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+    .hero-card{
+      background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+      border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:var(--shadow);
+    }
+    .shield{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:rgba(232,121,169,.1);border:1px solid rgba(232,121,169,.2);margin-bottom:20px}
+    .shield svg{width:31px}
+    .hero-card h3{margin:0 0 10px;font-size:21px}
+    .hero-card p{font-size:14px;line-height:1.65;margin:0 0 18px}
+    .mini-list{display:grid;gap:10px}
+    .mini-item{display:flex;gap:10px;align-items:flex-start;color:#d9d5e4;font-size:13px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--pink);margin-top:6px;flex:none}
+    section{padding:62px 0}
+    .section-head{max-width:760px;margin-bottom:28px}
+    .section-head .label{color:#e8a5c4;font-weight:800;font-size:12px;letter-spacing:1.5px;text-transform:uppercase}
+    .section-head h2{font-size:36px;letter-spacing:-1.5px;margin:9px 0}
+    .section-head p{color:var(--muted);line-height:1.7}
+    .sdg-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+    .card{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:22px;padding:25px}
+    .sdg-badge{display:inline-flex;align-items:center;gap:10px;background:#111;border-radius:12px;padding:10px 13px;margin-bottom:18px}
+    .sdg-num{font-weight:900;font-size:22px}
+    .sdg-badge span:last-child{font-size:12px;color:#ddd}
+    .card h3{margin:0 0 10px}
+    .card p{color:var(--muted);line-height:1.7;font-size:14px}
+    .target{border-left:3px solid var(--pink);padding-left:16px;margin-top:18px;color:#ddd;line-height:1.6;font-size:14px}
+    .authority-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .authority a{display:inline-block;color:#f1b6cf;text-decoration:none;font-weight:750;font-size:13px;margin-top:8px}
+    .chat-section{padding-top:30px}
+    .chat-shell{
+      max-width:920px;margin:auto;
+      border:1px solid rgba(232,121,169,.18);
+      background:rgba(17,16,34,.9);border-radius:26px;overflow:hidden;box-shadow:var(--shadow)
+    }
+    .chat-top{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+    .chat-title{display:flex;align-items:center;gap:11px}
+    .online{width:10px;height:10px;background:var(--success);border-radius:50%;box-shadow:0 0 14px rgba(117,217,177,.6)}
+    .chat-title strong{display:block}.chat-title span{font-size:12px;color:var(--muted)}
+    .privacy-pill{font-size:11px;color:#d9d2e8;background:rgba(255,255,255,.05);padding:7px 10px;border-radius:999px}
+    #messages{height:460px;overflow-y:auto;padding:22px;background:linear-gradient(180deg,rgba(255,255,255,.015),transparent)}
+    .msg{display:flex;margin:12px 0}
+    .msg.user{justify-content:flex-end}
+    .bubble{max-width:78%;padding:13px 15px;border-radius:16px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+    .assistant .bubble{background:#19172d;border:1px solid var(--line);border-bottom-left-radius:5px}
+    .user .bubble{background:linear-gradient(135deg,#8f4c73,#6947a9);border-bottom-right-radius:5px}
+    .typing{color:var(--muted);font-size:13px;padding:0 22px 10px;display:none}
+    .composer{border-top:1px solid var(--line);padding:14px;display:flex;gap:10px}
+    #input{flex:1;resize:none;min-height:48px;max-height:120px;border:1px solid var(--line);outline:none;background:#0d0b1b;color:#fff;border-radius:14px;padding:13px;font:inherit}
+    #input:focus{border-color:rgba(232,121,169,.5)}
+    .send{width:52px;padding:0;display:grid;place-items:center}
+    .notice{padding:11px 18px;color:#918ba3;font-size:11px;line-height:1.5;border-top:1px solid var(--line)}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+    .step .number{font-size:12px;color:#efafd0;font-weight:900}
+    .step h4{margin:8px 0 5px}.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+    footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted)}
+    .footer-inner{display:flex;justify-content:space-between;gap:25px;align-items:center}
+    .credit{color:#fff;font-weight:800}.credit small{display:block;color:#c0bacd;font-weight:500;margin-top:4px}
+    .footer-note{font-size:12px;max-width:560px;line-height:1.6}
+
+    .report-card{
+      margin-top:14px;
+      padding:18px;
+      border:1px solid rgba(232,121,169,.22);
+      background:linear-gradient(145deg,rgba(232,121,169,.07),rgba(167,139,250,.05));
+      border-radius:18px;
+    }
+    .report-card h2{
+      margin:0 0 14px;
+      font-size:20px;
+      line-height:1.3;
+      color:#f5d0e0;
+    }
+    .report-body{
+      color:#e8e3ef;
+      font-size:14px;
+      line-height:1.7;
+    }
+    .report-body strong{color:#fff}
+    .report-body hr{
+      border:0;
+      border-top:1px solid var(--line);
+      margin:18px 0;
+    }
+    .report-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+    .report-btn{
+      border:1px solid rgba(232,121,169,.28);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      padding:10px 14px;
+      border-radius:11px;
+      font-size:13px;
+      font-weight:750;
+      cursor:pointer;
+    }
+    .report-btn.primary-report{
+      background:linear-gradient(135deg,var(--pink-2),#8b5cf6);
+      border-color:transparent;
+    }
+    .report-btn:hover{transform:translateY(-1px)}
+    .report-note{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+    }
+
+    @media(max-width:850px){
+      .hero-grid,.sdg-grid{grid-template-columns:1fr}
+      .authority-grid,.steps{grid-template-columns:1fr 1fr}
+      .nav-links{display:none}
+      h1{letter-spacing:-2px}
+    }
+    @media(max-width:560px){
+      .authority-grid,.steps{grid-template-columns:1fr}
+      #messages{height:420px}
+      .privacy-pill{display:none}
+      .footer-inner{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-inner">
+    <a class="brand" href="#">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+          <path d="M12 21s-7-4.35-9.2-8.6C.7 8.3 3.2 5 6.8 5c2 0 3.8 1 5.2 2.7C13.4 6 15.2 5 17.2 5 20.8 5 23.3 8.3 21.2 12.4 19 16.65 12 21 12 21Z"/>
+        </svg>
+      </span>
+      HerSafe AI
+    </a>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#sdg5">SDG 5</a>
+      <a href="#authorities">Authorities</a>
+      <a href="#chat">Report & Support</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="hero" id="about">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">GenAI • Women's Safety • SDG 5</span>
+        <h1><span class="gradient">Your story matters.</span><br>HerSafe AI listens.</h1>
+        <p>
+          A conversational AI assistant designed to help women document harassment,
+          understand what they experienced, explore safer next steps, and organize
+          an incident report — without forcing unnecessary personal information.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#chat">Start a confidential conversation</a>
+          <a class="button secondary" href="#sdg5">Why SDG 5?</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#f0a9c8" stroke-width="1.6">
+            <path d="M12 3 20 6v5c0 5-3.3 8.7-8 10-4.7-1.3-8-5-8-10V6l8-3Z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <h3>A support-first AI experience</h3>
+        <p>HerSafe AI is built around empathy, privacy, informed choices, and practical support navigation.</p>
+        <div class="mini-list">
+          <div class="mini-item"><span class="dot"></span><span>Describe an incident naturally through conversation.</span></div>
+          <div class="mini-item"><span class="dot"></span><span>Identify possible harassment categories and safety concerns.</span></div>
+          <div class="mini-item"><span class="dot"></span><span>Receive guidance and support options based on the situation.</span></div>
+          <div class="mini-item"><span class="dot"></span><span>Generate an editable incident summary for the user's review.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sdg5">
+    <div class="container">
+      <div class="section-head">
+        <div class="label">United Nations Sustainable Development Goals</div>
+        <h2>Why HerSafe AI aligns with SDG 5</h2>
+        <p>
+          SDG 5 aims to achieve gender equality and empower all women and girls.
+          Its Target 5.2 specifically calls for eliminating violence against women
+          and girls in public and private spheres, including sexual and other forms of exploitation.
+        </p>
+      </div>
+
+      <div class="sdg-grid">
+        <div class="card">
+          <div class="sdg-badge"><span class="sdg-num">5</span><span>GENDER EQUALITY</span></div>
+          <h3>Technology as an access layer</h3>
+          <p>
+            HerSafe AI uses conversational AI to lower the friction involved in documenting
+            an experience and finding appropriate support. It is designed to complement,
+            not replace, formal reporting systems, qualified professionals, or emergency services.
+          </p>
+          <div class="target">
+            <strong>SDG 5.2</strong><br>
+            Eliminate all forms of violence against all women and girls in the public and private spheres.
+          </div>
+          <div class="target">
+            <strong>SDG 5.b</strong><br>
+            Enhance the use of enabling technology to promote the empowerment of women.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>What HerSafe AI contributes</h3>
+          <p>Our MVP focuses on four practical contributions:</p>
+          <div class="mini-list">
+            <div class="mini-item"><span class="dot"></span><span><strong>Accessible documentation:</strong> conversational reporting instead of a complicated form.</span></div>
+            <div class="mini-item"><span class="dot"></span><span><strong>AI-assisted understanding:</strong> extracts and organizes information from an unstructured narrative.</span></div>
+            <div class="mini-item"><span class="dot"></span><span><strong>Support navigation:</strong> suggests relevant categories of help and next steps.</span></div>
+            <div class="mini-item"><span class="dot"></span><span><strong>User agency:</strong> the user reviews and decides what to do with a generated report.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="authorities">
+    <div class="container">
+      <div class="section-head">
+        <div class="label">Relevant authorities & frameworks</div>
+        <h2>Built around established gender-equality goals</h2>
+        <p>
+          HerSafe AI is conceptually aligned with international gender-equality and
+          violence-prevention work. These links are included for context and further reading;
+          they are not an indication that HerSafe AI is affiliated with or endorsed by them.
+        </p>
+      </div>
+
+      <div class="authority-grid">
+        <div class="card authority">
+          <h3>United Nations — SDG 5</h3>
+          <p>Official SDG 5 framework, targets and indicators for gender equality.</p>
+          <a href="https://sdgs.un.org/goals/goal5" target="_blank" rel="noopener">Explore SDG 5 ↗</a>
+        </div>
+        <div class="card authority">
+          <h3>UN Women</h3>
+          <p>UN entity focused on gender equality and the empowerment of women, including ending violence against women.</p>
+          <a href="https://www.unwomen.org/" target="_blank" rel="noopener">Visit UN Women ↗</a>
+        </div>
+        <div class="card authority">
+          <h3>SDG 5.2</h3>
+          <p>The specific SDG target most directly connected to harassment, violence and exploitation against women and girls.</p>
+          <a href="https://sdgs.un.org/goals/goal5#targets_and_indicators" target="_blank" rel="noopener">View targets ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="chat-section" id="chat">
+    <div class="container">
+      <div class="section-head">
+        <div class="label">HerSafe AI Assistant</div>
+        <h2>Start your conversation</h2>
+        <p>
+          You can describe what happened in your own words. You do not need to provide
+          your name or other identifying information to begin.
+        </p>
+      </div>
+
+      <div class="chat-shell">
+        <div class="chat-top">
+          <div class="chat-title">
+            <span class="online"></span>
+            <div><strong>HerSafe AI</strong><span>Support & incident documentation assistant</span></div>
+          </div>
+          <div class="privacy-pill">Privacy-first prototype</div>
+        </div>
+
+        <div id="messages">
+          <div class="msg assistant">
+            <div class="bubble">Hi, I'm HerSafe AI. I'm here to help you document what happened, understand your options, and find appropriate next steps. You can share only what you're comfortable sharing. What would you like help with today?</div>
+          </div>
+        </div>
+
+        <div class="typing" id="typing">HerSafe AI is thinking…</div>
+
+        <form class="composer" id="chatForm">
+          <textarea id="input" placeholder="Describe what happened or ask for support…" rows="1" aria-label="Message"></textarea>
+          <button class="primary send" type="submit" aria-label="Send message">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/>
+            </svg>
+          </button>
+        </form>
+        <div class="notice">
+          HerSafe AI is an educational prototype, not an emergency service, legal service, or official reporting authority.
+          If someone is in immediate danger, seek appropriate local emergency help or a trusted person.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="section-head">
+        <div class="label">How it works</div>
+        <h2>From story to structured support</h2>
+      </div>
+      <div class="steps">
+        <div class="card step"><div class="number">01</div><h4>Listen</h4><p>The user explains an incident naturally through conversation.</p></div>
+        <div class="card step"><div class="number">02</div><h4>Understand</h4><p>AI extracts relevant information and identifies possible incident categories.</p></div>
+        <div class="card step"><div class="number">03</div><h4>Support</h4><p>The assistant provides context-aware safety guidance and support options.</p></div>
+        <div class="card step"><div class="number">04</div><h4>Document</h4><p>A structured incident summary can be reviewed by the user before use.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="credit">
+      Designed and Automated by:<br>
+      <span>Hafsa Anwar</span>
+      <small>AI/ML &amp; Robotics Engineer</small>
+    </div>
+    <div class="footer-note">
+      HerSafe AI is an independent educational project aligned with SDG 5.
+      It does not represent the United Nations, UN Women, or any government or emergency authority.
+      Always verify external resources and seek qualified professional help when appropriate.
+    </div>
+  </div>
+</footer>
+
+<script>
+  /*
+    ================================
+    CONNECT HER SAFE AI TO N8N
+    ================================
+
+    Replace the URL below with your n8n Chat Trigger production URL.
+
+    Example:
+    const N8N_CHAT_URL = "https://YOUR-WORKSPACE.app.n8n.cloud/webhook/....";
+
+    If your n8n Chat Trigger is configured differently, adjust sendMessage()
+    to match the request format shown by your n8n Chat Trigger node.
+  */
+  const N8N_CHAT_URL = "https://hafsa-automation-lab.app.n8n.cloud/webhook/hersafe-ai-chat-trigger/chat";
+
+  const messages = document.getElementById("messages");
+  const form = document.getElementById("chatForm");
+  const input = document.getElementById("input");
+  const typing = document.getElementById("typing");
+
+  // Keep one conversation session in this browser.
+  const sessionKey = "hersafe_session_id";
+  let sessionId = localStorage.getItem(sessionKey);
+  if (!sessionId) {
+    sessionId = (crypto.randomUUID ? crypto.randomUUID() : "hs-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+    localStorage.setItem(sessionKey, sessionId);
+  }
+
+  function addMessage(text, role) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg " + role;
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+
+    wrapper.appendChild(bubble);
+    messages.appendChild(wrapper);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function extractReply(data) {
+    if (typeof data === "string") return data;
+
+    // Common n8n response shapes; keep this flexible.
+    if (data && typeof data.output === "string") return data.output;
+    if (data && typeof data.response === "string") return data.response;
+    if (data && typeof data.text === "string") return data.text;
+    if (data && typeof data.message === "string") return data.message;
+    if (data && Array.isArray(data) && data[0]) return extractReply(data[0]);
+
+    return "I received your message, but I couldn't display the response. Please try again.";
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function markdownToHtml(text) {
+    let safe = escapeHtml(text);
+
+    safe = safe
+    .replace(/^### (.+)$/gm, "<h2>$1</h2>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n---\n/g, "<hr>")
+    .replace(/\*/g, "")
+    .replace(/\n/g, "<br>");
+    
+    return safe;
+  }
+
+  function displayBotResponse(text) {
+    const reportMarker = "### HerSafe AI Incident Report";
+
+    if (!text.includes(reportMarker)) {
+      addMessage(text, "assistant");
+      return;
+    }
+
+    const reportStart = text.indexOf(reportMarker);
+    const beforeReport = text.substring(0, reportStart).trim();
+    const reportText = text.substring(reportStart).trim();
+
+    if (beforeReport) {
+      addMessage(beforeReport, "assistant");
+    }
+
+    addReportMessage(reportText);
+  }
+
+  function addReportMessage(reportText) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg assistant";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.style.maxWidth = "90%";
+
+    const card = document.createElement("div");
+    card.className = "report-card";
+
+    const body = document.createElement("div");
+    body.className = "report-body";
+    body.innerHTML = markdownToHtml(reportText);
+
+    const actions = document.createElement("div");
+    actions.className = "report-actions";
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.type = "button";
+    downloadBtn.className = "report-btn primary-report";
+    downloadBtn.textContent = "📄 Download Report";
+    downloadBtn.addEventListener("click", () => downloadReport(reportText));
+
+    const printBtn = document.createElement("button");
+    printBtn.type = "button";
+    printBtn.className = "report-btn";
+    printBtn.textContent = "🖨️ Save as PDF";
+    printBtn.addEventListener("click", () => printReport(reportText));
+
+    actions.appendChild(downloadBtn);
+    actions.appendChild(printBtn);
+
+    const note = document.createElement("div");
+    note.className = "report-note";
+    note.textContent = "Draft only. Review the report before saving or sharing. It has not been submitted anywhere.";
+
+    card.appendChild(body);
+    card.appendChild(actions);
+    card.appendChild(note);
+    bubble.appendChild(card);
+    wrapper.appendChild(bubble);
+    messages.appendChild(wrapper);
+
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function reportAsHtml(reportText) {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HerSafe AI — Incident Report</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;max-width:850px;margin:40px auto;padding:30px;color:#222;line-height:1.65;background:#fff}
+  h1{color:#8b5cf6;margin-bottom:4px}
+  h2{color:#9a4f79;margin-top:22px}
+  hr{border:0;border-top:1px solid #ddd;margin:24px 0}
+  .subtitle{color:#666;margin-bottom:28px}
+  .footer{margin-top:42px;padding-top:18px;border-top:1px solid #ddd;color:#666;font-size:13px}
+  strong{color:#222}
+</style>
+</head>
+<body>
+<h1>HerSafe AI</h1>
+<div class="subtitle">Incident Report — AI-generated draft</div>
+${markdownToHtml(reportText)}
+<div class="footer">
+  <strong>Designed and Automated by:</strong><br>
+  Hafsa Anwar<br>
+  AI/ML &amp; Robotics Engineer<br><br>
+  This report was generated from a HerSafe AI conversation. It has not been submitted to any authority.
+  Please review, edit, save, or share it only as you choose.
+</div>
+</body>
+</html>`;
+  }
+
+  function downloadReport(reportText) {
+    const htmlDocument = reportAsHtml(reportText);
+    const blob = new Blob([htmlDocument], {type: "text/html;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "HerSafe_AI_Incident_Report.html";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function printReport(reportText) {
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+      alert("Please allow pop-ups in your browser to save the report as PDF.");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(reportAsHtml(reportText));
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 250);
+    };
+  }
+
+  async function sendMessage(message) {
+    if (N8N_CHAT_URL === "PASTE_YOUR_N8N_CHAT_TRIGGER_URL_HERE") {
+      throw new Error("Add your n8n Chat Trigger URL in the HTML first.");
+    }
+
+    /*
+      n8n Chat Trigger commonly accepts:
+      action: sendMessage
+      sessionId: browser conversation ID
+      chatInput: user's message
+
+      If your Chat Trigger gives you a different request format,
+      use the format shown in your n8n node and update this body.
+    */
+    const response = await fetch(N8N_CHAT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "sendMessage",
+        sessionId: sessionId,
+        chatInput: message
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("n8n returned HTTP " + response.status);
+    }
+
+    const data = await response.json();
+    return extractReply(data);
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, "user");
+    input.value = "";
+    input.style.height = "auto";
+
+    typing.style.display = "block";
+    messages.scrollTop = messages.scrollHeight;
+
+    try {
+      const reply = await sendMessage(message);
+      displayBotResponse(reply);
+    } catch (error) {
+      console.error(error);
+      addMessage(
+        "I'm having trouble connecting to the HerSafe AI workflow right now. Please check the n8n Chat Trigger URL and make sure the workflow is active.",
+        "assistant"
+      );
+    } finally {
+      typing.style.display = "none";
+    }
+  });
+
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+</script>
+</body>
+</html>
