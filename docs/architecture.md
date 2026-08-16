@@ -1,9 +1,9 @@
-# 🏗️ Architecture HerSafe AI
+# 🏗️ Architecture: HerSafe AI
 
 ## System Overview
 
 HerSafe AI is built as a conversational workflow using **n8n** for
-orchestration and the **Claude API** for language understanding,
+orchestration and the **OpenRouter API** for language understanding,
 classification, and guidance generation. The frontend is a lightweight
 HTML/JS chat widget that sends user messages to the n8n Chat Trigger and
 displays the AI's responses.
@@ -27,7 +27,7 @@ displays the AI's responses.
                │
                ▼
 ┌─────────────────────────────┐
-│   AI Understanding           │  Claude interprets the narrative and
+│   AI Understanding           │  The LLM (via OpenRouter) interprets the narrative and
 │                               │  extracts structured incident info:
 │                               │  category, description, date/time,
 │                               │  context, ongoing status, safety
@@ -58,7 +58,7 @@ displays the AI's responses.
                ▼
 ┌─────────────────────────────┐
 │   Support & Guidance         │  Generates next-step suggestions and
-│                               │  support categories no invented
+│                               │  support categories — no invented
 │                               │  org names or numbers
 └──────────────┬───────────────┘
                │
@@ -79,7 +79,7 @@ displays the AI's responses.
 | Decision | Why |
 |---|---|
 | **n8n** for orchestration | Build and iterate on AI logic visually, without standing up custom backend infrastructure |
-| **Claude API** for reasoning | Handles free-text understanding, classification, and empathetic guidance far more flexible than keyword-matching or static forms |
+| **OpenRouter API** for reasoning | Handles free-text understanding, classification, and empathetic guidance far more flexible than keyword-matching or static forms |
 | **Structured JSON extraction** | Keeps AI output predictable enough to route reliably through classification and safety logic |
 | **No database / persistent storage** | Conversation state lives only for the session, minimizing data retention and privacy risk |
 
@@ -109,3 +109,9 @@ displays the AI's responses.
 - Secure, consent-based persistent report storage
 - Multilingual support
 - Optional (opt-in) connection to real reporting channels with proper safeguards
+
+---
+
+## 👤 Author
+
+**Hafsa Anwar**
