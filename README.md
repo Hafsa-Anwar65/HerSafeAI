@@ -7,7 +7,7 @@
 *Turning a hard conversation into a clear, safe first step.*
 
 [![Built with n8n](https://img.shields.io/badge/Built%20with-n8n-EA4B71?style=flat-square)](https://n8n.io)
-[![Powered by Claude](https://img.shields.io/badge/Powered%20by-Claude%20API-8A63D2?style=flat-square)](https://www.anthropic.com)
+[![Powered by OpenRouter](https://img.shields.io/badge/Powered%20by-OpenRouter%20API-8A63D2?style=flat-square)](https://openrouter.ai)
 [![SDG 5](https://img.shields.io/badge/SDG-5%20Gender%20Equality-FF3A21?style=flat-square)](https://sdgs.un.org/goals/goal5)
 
 🔗 **[Live Demo](https://hersafeai.netlify.app/)** &nbsp;·&nbsp; 🎥 **[Video Walkthrough](https://youtu.be/bx4r2AGHs5Q)**
@@ -27,7 +27,7 @@ no forms, no interrogation and uses AI to:
 - 🤝 Recommend relevant categories of support
 - 📝 Generate an editable, downloadable draft report
 
-Built end-to-end with **n8n** for workflow orchestration and the **Claude API**
+Built end-to-end with **n8n** for workflow orchestration and the **OpenRouter API**
 for language understanding no custom backend required.
 
 > Supports **SDG 5 Gender Equality**, improving access to reporting
@@ -77,7 +77,7 @@ HerSafeAI/
 | Layer | Technology |
 |---|---|
 | Workflow orchestration | [n8n](https://n8n.io) |
-| AI reasoning | [Claude API](https://www.anthropic.com) |
+| AI reasoning | [OpenRouter API](https://openrouter.ai) |
 | Frontend | HTML + JavaScript |
 
 ---
